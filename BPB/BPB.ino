@@ -1,24 +1,20 @@
-//Global Variables
-//LED and Button Pins
+//LED and Button Pins for Players
 const int numberOfPlayers = 3;     
 int button[numberOfPlayers];       
 int buttonState[numberOfPlayers];
 int lastReading[numberOfPlayers]; 
 int led[numberOfPlayers];     
 
-int blinkRate = 5;
-boolean programmed = false;
-boolean running = false;
-//Track Turn order and create array to hold turns
-int Turn = 0;
+//Turn Order and Tracking
+int turn = 0;
 int turnOrder[15];
-int curTurn=0;
-int totalTurns=0;
-int waitButton = 0;
 
-
-
+//Application State
+boolean running = false;
 int mode = 0;
+
+//Configuration
+int blinkRate = 5;
 
 void setup(){ 
   //loop to assign button and leds to pins
@@ -30,26 +26,18 @@ void setup(){
   }
 }
 
-/*modes:
-0 = idle
-1 = blink
-2 = program
-3= run
-*/
-
 void loop(){
   switch(mode){
   case 0:         //walk, when dm buttom high go to 1
     mode = walk();
     break;        
   case 1:         //blink, then go to 2
-    blinkLED();
+    mode = blinkAllLEDs();
     break;
   case 2:         //program the turn order with button pushes
-    program();
-    Turn = 0;
+    mode = program();
     break;
-  case 3:
+  case 3:         //run the game
     run();
     break;
   }
@@ -67,7 +55,7 @@ int walk(){
   return 0;
 }
 
-void blinkLED(){
+int blinkAllLEDs(){
   int maxBlinks = 6;
   for(int i=0; i<maxBlinks; i++){
     for(int j=0; j < numberOfPlayers; j++){
@@ -79,16 +67,25 @@ void blinkLED(){
     }
     delay(blinkRate);
   }
-  mode = 2;
+  return 2;
 }
 
-void program(){
-  
+int program(){
+  turnoffLEDs();
+  readButtons();
+  setTurns();
+  if(buttonState[0] == HIGH && lastReading[0] == HIGH){
+      running = true;
+      turnOrder[turn] = -1;
+      return 3;
+   }
 }
 
 
 void run(){
-
+  for(int i=0; turnOrder[i] >= 0; i++){
+      blinkLED(turnOrder[1],1);
+  }
 } 
 
 void readButtons(){
@@ -96,4 +93,33 @@ void readButtons(){
     lastReading[i] = buttonState[i];
     buttonState[i] = digitalRead(button[i]);
   }  
+}
+
+void turnoffLEDs(){
+ for(int i = 0; i < numberOfPlayers; i++){
+    digitalWrite(led[i], LOW);
+  }
+}
+
+void setTurns(){
+  for(int i = 0; i < numberOfPlayers; i++){
+    if(buttonState[i] == HIGH){
+        turnOrder[turn] = i;
+        turn++;
+        blinkLED(i,2);
+    }
+  }
+}
+
+//blink LED X, Y number of times
+void blinkLED(int X, int Y){
+  turnoffLEDs();
+  for(int i=0; i<Y; i++){
+    digitalWrite(led[X], HIGH);
+    delay(blinkRate);
+    digitalWrite(led[X], LOW);
+    delay(blinkRate);
+  }
+ 
+
 }
