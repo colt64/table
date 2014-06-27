@@ -30,24 +30,28 @@ void setup(){
   }
 }
 
+/*modes:
+0 = idle
+1 = blink
+2 = program
+3= run
+*/
+
 void loop(){
   readButtons();
   switch(mode){
-    case 0:
+  case 0:         //walk, when dm buttom high go to 1
     walk();
-    if(buttonState[0] == HIGH){
-      mode = 1;
-    }
     break;        
-    case 1:
+  case 1:         //blink, then go to 2
     blinkLED();
     mode = 2;
     break;
-    case 2:
+  case 2:         //program the turn order with button pushes
     program();
     Turn = 0;
     break;
-    case 3:
+  case 3:
     run();
     break;
   }
@@ -58,7 +62,11 @@ void walk(){
     digitalWrite(led[i], HIGH);
     delay(blinkRate);
     digitalWrite(led[i], LOW);
-  }
+    if(buttonState[0] == HIGH){
+      mode = 1;
+    }
+  } 
+
 }
 
 void blinkLED(){
@@ -76,69 +84,12 @@ void blinkLED(){
 }
 
 void program(){
-  readButtons();
-  if(buttonState[0] == HIGH && lastReading[0] == HIGH)
-  { int onTime = micros();
-    if((micros() - onTime) > 50 && programmed == true){
-      running = true;
-      totalTurns= Turn;
-      mode = 3;
-    }
-  }
-  if(buttonState[0] == HIGH  && lastReading[0] == LOW){
-   turnOrder[Turn] = 0;
-   digitalWrite(led[0], HIGH);
-   digitalWrite(led[1], LOW);
-   digitalWrite(led[2], LOW);
-   Turn++;
- }
- else if(buttonState[1] == HIGH)
- {
-   turnOrder[Turn] = 1;
-   digitalWrite(led[0], LOW);
-   digitalWrite(led[1], HIGH);
-   digitalWrite(led[2], LOW);
-   Turn++;
- }
- else if(buttonState[2] == HIGH)
- {
-  turnOrder[Turn] = 2;
-  digitalWrite(led[0], LOW);
-  digitalWrite(led[1], LOW);
-  digitalWrite(led[2], HIGH);
-  Turn++;
+  
 }
 
-lastReading[0] = buttonState[0];
-}
 
 void run(){
-  switch(turnOrder[curTurn]){
-   case 1: 
-   digitalWrite(led[0], HIGH);
-   digitalWrite(led[1], LOW);
-   digitalWrite(led[2], LOW);
-   waitButton = 0;
-   break;
-   case 2: 
-   digitalWrite(led[0], LOW);
-   digitalWrite(led[1], HIGH);
-   digitalWrite(led[2], LOW);
-   waitButton = 1;
-   break;
-   case 3: 
-   digitalWrite(led[0], LOW);
-   digitalWrite(led[1], LOW);
-   digitalWrite(led[2], HIGH);
-   waitButton = 2;
-   break;
 
- }
- if(digitalRead(button[waitButton]) == HIGH)
- {
-   curTurn++;
- }  
- lastReading[0] = buttonState[0];    
 } 
 
 void readButtons(){
