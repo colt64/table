@@ -38,14 +38,12 @@ void setup(){
 */
 
 void loop(){
-  readButtons();
   switch(mode){
   case 0:         //walk, when dm buttom high go to 1
-    walk();
+    mode = walk();
     break;        
   case 1:         //blink, then go to 2
     blinkLED();
-    mode = 2;
     break;
   case 2:         //program the turn order with button pushes
     program();
@@ -57,30 +55,31 @@ void loop(){
   }
 }
 
-void walk(){
+int walk(){
   for(int i = 0; i < numberOfPlayers; i++){
     digitalWrite(led[i], HIGH);
     delay(blinkRate);
     digitalWrite(led[i], LOW);
-    if(buttonState[0] == HIGH){
-      mode = 1;
+    if(digitalRead(button[0]) == HIGH){
+      return 1;
     }
-  } 
-
+  }
+  return 0;
 }
 
 void blinkLED(){
   int maxBlinks = 6;
   for(int i=0; i<maxBlinks; i++){
-    for(int j=0; i < numberOfPlayers; i++){
-      digitalWrite(led[i], HIGH);
+    for(int j=0; j < numberOfPlayers; j++){
+      digitalWrite(led[j], HIGH);
     }
     delay(blinkRate);
-    for(int j=0; i < numberOfPlayers; i++){
-      digitalWrite(led[i], LOW);
+    for(int j=0; j < numberOfPlayers; j++){
+      digitalWrite(led[j], LOW);
     }
     delay(blinkRate);
   }
+  mode = 2;
 }
 
 void program(){
@@ -95,8 +94,6 @@ void run(){
 void readButtons(){
   for(int i = 0; i < numberOfPlayers; i++){
     lastReading[i] = buttonState[i];
-  }  
-  for(int i = 0; i < numberOfPlayers; i++){
     buttonState[i] = digitalRead(button[i]);
-  }
+  }  
 }
